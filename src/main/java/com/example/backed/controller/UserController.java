@@ -13,12 +13,11 @@ import com.example.backed.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.example.backed.constant.UserConstant.ADMIN_ROLE;
 import static com.example.backed.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -28,6 +27,7 @@ import static com.example.backed.constant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
+//@CrossOrigin(origins = {"http://localhost:8000"})
 public class UserController {
     @Resource
     private UserService userService;
@@ -87,7 +87,7 @@ public class UserController {
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
         //进管理员可以查询
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -99,11 +99,41 @@ public class UserController {
         List<User> list = userList.stream().map(user -> userService.getSafeUser(user)).collect(Collectors.toList());
         return ResultUtils.success(list);
     }
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList){
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<User> userList= userService.searchUserByTags((tagNameList));
+        return ResultUtils.success(userList);
+    }
+
+    @GetMapping("/recommend")
+    public BaseResponse<List<User>> recommedUsers(String username, HttpServletRequest request) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userService.list(queryWrapper);
+        List<User> list = userList.stream().map(user -> userService.getSafeUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(list);
+    }
+
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@RequestBody User user, HttpServletRequest request){
+        //1.检验参数是否为空
+        if(user==null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //2.校验权限
+        //3.触发更新
+        User loginUser = userService.getLoginUser(request);
+
+        int result = userService.updateUser(user,loginUser);
+        return ResultUtils.success(result);
+    }
 
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         //进管理员可以查询
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         if (id <= 0) {
@@ -113,19 +143,9 @@ public class UserController {
         return ResultUtils.success(b);
     }
 
-    /**
-     * 是否为管理员
-     *
-     * @param request
-     * @return
-     */
 
-    private boolean isAdmin(HttpServletRequest request) {
-        //进管理员可以查询
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User user = (User) userObj;
-        return user != null && user.getUserRole() == ADMIN_ROLE;
-    }
+
+
 
 }
 

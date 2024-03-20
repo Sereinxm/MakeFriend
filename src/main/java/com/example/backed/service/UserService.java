@@ -4,6 +4,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.backed.model.domain.User;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
+
+import static com.example.backed.constant.UserConstant.ADMIN_ROLE;
+import static com.example.backed.constant.UserConstant.USER_LOGIN_STATE;
+
 
 public interface UserService extends IService<User> {
 
@@ -42,4 +47,38 @@ public interface UserService extends IService<User> {
      * @return
      */
     int userLogout(HttpServletRequest request);
+
+    /**
+     * 根据标签搜索用户
+     * @param tagNameList 用户要拥有的标签
+     * @return
+     */
+    List<User> searchUserByTags(List<String> tagNameList);
+
+    /**
+     * 更新用户信息
+     * @param user
+     * @return
+     */
+    int updateUser(User user,User loginUser);
+
+    /**
+     * 获取当前用户登录信息
+     * @return
+     */
+    User getLoginUser(HttpServletRequest request);
+
+    /**
+     * 是否为管理员
+     * @param request
+     * @return
+     */
+    boolean isAdmin(HttpServletRequest request);
+
+    /**
+     * 是否为管理员
+     * @param loginUser
+     * @return
+     */
+    boolean isAdmin(User loginUser);
 }

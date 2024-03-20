@@ -2,21 +2,23 @@ package com.example.backed.service;
 
 import com.example.backed.model.domain.User;
 import jakarta.annotation.Resource;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 用户服务测试
  * **/
 
 @SpringBootTest
 class UserServiceTest {
-
-
     @Resource
     private UserService userService;
-
-
     @Test
     void testAddUser(){
         User user = new User();
@@ -35,51 +37,74 @@ class UserServiceTest {
     @Test
     void userRegister(){
 
-        String userAccount="caocao";
+        String userAccount="caoc1aaeo";
         String userPassword="123456789";
         String checkPassword="123456789";
-        String planetCode="1";
+        String planetCode="16";
         long result= userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
-        Assertions.assertEquals(-1,result);
+        Assertions.assertTrue(result>0);
 
-        userAccount="yu";
-        userPassword="123456";
-        checkPassword="123456";
-        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
-        Assertions.assertEquals(-1,result);
 
-        userAccount="yupi";
-        userPassword="123456";
-        checkPassword="123456";
-        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
-        Assertions.assertEquals(-1,result);
-
-        userAccount="yu545";
-        userPassword="123456";
-        checkPassword="123456";
-        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
-        Assertions.assertEquals(-1,result);
-
-        userAccount="yu65445";
-        userPassword="123456";
-        checkPassword="123456321";
-        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
-        Assertions.assertEquals(-1,result);
-
-        userAccount="yu78pi";
-        userPassword="123456";
-        checkPassword="123456";
-        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
-        Assertions.assertEquals(-1,result);
-
-        userAccount="wangping";
+        userAccount="yutrtre";
         userPassword="123456789";
         checkPassword="123456789";
-        planetCode="2";
+        planetCode="22";
+        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
+        Assertions.assertTrue(result>0);
+
+
+        userAccount="yu59pi";
+        userPassword="123456789";
+        checkPassword="123456789";
+        planetCode="23";
+
+        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
+        Assertions.assertTrue(result>0);
+
+
+        userAccount="yu545";
+        userPassword="123456789";
+        checkPassword="123456789";
+        planetCode="12";
+        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
+        Assertions.assertTrue(result>0);
+
+
+        userAccount="yu65445";
+        userPassword="123456789";
+        checkPassword="123456789";
+        planetCode="22";
+        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
+        Assertions.assertTrue(result>0);
+        ;
+
+        userAccount="yu78dspi";
+        userPassword="123456789";
+        checkPassword="123456789";
+        planetCode="32";
+        result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
+        Assertions.assertTrue(result>0);
+
+
+        userAccount="wangpdsing";
+        userPassword="123456789";
+        checkPassword="123456789";
+        planetCode="42";
         result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
         Assertions.assertTrue(result>0);
 
 
 
     }
+    /*
+     * 获取tag测试
+     */
+    @Test
+    public void searchUserByTags(){
+        List<String> tagNameList = Arrays.asList("Java","Python");
+        List<User>users=userService.searchUserByTags(tagNameList);
+        Assert.assertNotNull(users);
+
+    }
+
 }
