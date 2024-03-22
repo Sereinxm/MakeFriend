@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "spring.data.redis.databaseRedisson",
+      "type": "java.lang.String",
+      "description": "database of redisson."
+  }
+] }

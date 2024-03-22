@@ -2,12 +2,9 @@ package com.example.backed.once;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-
 import com.example.backed.mapper.UserMapper;
 import com.example.backed.model.domain.User;
 import jakarta.annotation.Resource;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -28,7 +25,6 @@ public class InsertUsers {
     /**
      * 循环插入用户
      */
-
 //    @Scheduled(initialDelay = 5000,fixedRate = Long.MAX_VALUE )
     public void doInsertUser() {
         StopWatch stopWatch =new StopWatch();
