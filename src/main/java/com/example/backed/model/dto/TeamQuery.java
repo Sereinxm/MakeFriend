@@ -1,14 +1,10 @@
-package com.example.backed.model.domain.dto;
+package com.example.backed.model.dto;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.example.backed.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.Date;
+import java.util.List;
 
 /**
  * 队伍查询封装类
@@ -25,6 +21,14 @@ public class TeamQuery extends PageRequest {
      * 队伍名称
      */
     private String name;
+    /**
+     * id列表
+     */
+    private List<Long> idList;
+    /**
+     * 搜索关键词（同时对队伍名称和描述搜索）
+     */
+    private String searchText;
 
     /**
      * 描述

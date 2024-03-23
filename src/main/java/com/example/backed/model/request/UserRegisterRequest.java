@@ -1,4 +1,4 @@
-package com.example.backed.model.domain.request;
+package com.example.backed.model.request;
 
 
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.example.backed.model.domain.request;
+package com.example.backed.model.request;
 
 import lombok.Data;
 
@@ -6,12 +6,17 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 用户注册请求体
+ * 队伍修改请求体
  */
 @Data
-public class TeamAddRequset implements Serializable {
+public class TeamUpdateRequest implements Serializable {
 
-    private static final long serialVersionUID = -8761092239450139699L;
+    private static final long serialVersionUID = 7877417333623913991L;
+    /**
+     * id
+     */
+    private Long id;
+
     /**
      * 队伍名称
      */
@@ -23,19 +28,9 @@ public class TeamAddRequset implements Serializable {
     private String description;
 
     /**
-     * 最大人数
-     */
-    private Integer maxNum;
-
-    /**
      * 过期时间
      */
     private Date expireTime;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 
     /**
      * 0 - 公开，1 - 私有，2 - 加密
