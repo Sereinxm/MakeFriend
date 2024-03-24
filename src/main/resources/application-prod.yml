@@ -1,14 +1,43 @@
 # DataSource Config
-server:
-  port: 8080
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/partner
-    username: root
-    password: 123456
+    url: jdbc:mysql://localhost:3306/partner
+    username: partner
+    password: H5fSfcky3QJ23TBc
     #session生效时间
 
   session:
     timeout: 86400
-
+  #redis设置
+  data:
+    redis:
+      databaseRedisson: 3
+      host: localhost
+      port: 6379
+      database: 0
+      password: aYsABZb5SxbtC2Jr
+server:
+  port: 8085
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        domain: 106.54.192.192
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.example.backed.controller
+# knife4j的增强配置，不需要增强可以不配
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    home-custom-path:

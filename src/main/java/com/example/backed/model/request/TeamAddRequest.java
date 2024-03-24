@@ -9,7 +9,7 @@ import java.util.Date;
  * 用户注册请求体
  */
 @Data
-public class TeamAddRequset implements Serializable {
+public class TeamAddRequest implements Serializable {
 
     private static final long serialVersionUID = -8761092239450139699L;
     /**

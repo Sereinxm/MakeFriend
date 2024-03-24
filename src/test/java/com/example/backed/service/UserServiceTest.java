@@ -40,7 +40,7 @@ class UserServiceTest {
         String userAccount="caoc1aaeo";
         String userPassword="123456789";
         String checkPassword="123456789";
-        String planetCode="16";
+        String planetCode="1";
         long result= userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
         Assertions.assertTrue(result>0);
 
@@ -92,9 +92,6 @@ class UserServiceTest {
         planetCode="42";
         result =userService.userRegister(userAccount,userPassword,checkPassword,planetCode);
         Assertions.assertTrue(result>0);
-
-
-
     }
     /*
      * 获取tag测试
