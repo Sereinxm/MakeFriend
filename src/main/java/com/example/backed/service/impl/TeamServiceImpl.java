@@ -40,10 +40,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         implements TeamService {
-
     @Resource
     private UserTeamService userTeamService;
-
     @Resource
     private UserService userService;
     @Resource
@@ -169,7 +167,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             if (statusEnum == null) {
                 statusEnum = TeamStatusEnum.PUBLIC;
             }
-            if (!isAdmin && !statusEnum.equals(TeamStatusEnum.PUBLIC)) {
+            if (!isAdmin && statusEnum.equals(TeamStatusEnum.PUBLIC)) {
                 throw new BusinessException(ErrorCode.NO_AUTH);
             }
             queryWrapper.eq("status", statusEnum.getValue());
@@ -178,7 +176,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         //expireTime is null or expireTime > now()
         queryWrapper.and(qw -> qw.gt("expireTime", new Date()).or().isNull("expireTime"));
         List<Team> teamList = this.list(queryWrapper);
-        if (teamList == null) {
+        if (CollectionUtils.isEmpty(teamList)) {
             return new ArrayList<>();
         }
         List<TeamUserVO> teamUserVOList = new ArrayList<>();
@@ -221,7 +219,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
         //如果队伍状态改为加密必须要有密码
         TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(teamUpdateRequest.getStatus());
-        if (TeamStatusEnum.SECRET.equals(statusEnum)) {
+        if (statusEnum.equals(TeamStatusEnum.SECRET)) {
             if (StringUtils.isBlank(teamUpdateRequest.getPassword())) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "加密房间必须要有密码");
             }
@@ -247,13 +245,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
         //禁止加入私有队伍
         Integer status = team.getStatus();
-        TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(status);
-        if (TeamStatusEnum.PRIVATE.equals(statusEnum)) {
+        TeamStatusEnum teamStatusEnum = TeamStatusEnum.getEnumByValue(status);
+        if (TeamStatusEnum.PRIVATE.equals(teamStatusEnum)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "禁止加入私有队伍");
         }
         //如果加入的队伍是加密的，必须需要密码进行匹配
         String password = teamJoinRequest.getPassword();
-        if (TeamStatusEnum.SECRET.equals(statusEnum)) {
+        if (TeamStatusEnum.SECRET.equals(teamStatusEnum)) {
             if (StringUtils.isBlank(password) || !password.equals(team.getPassword())) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
             }
@@ -307,6 +305,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser) {
         //校验参数
         if (teamQuitRequest == null) {
@@ -318,8 +317,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         //校验当前登录用户是否已加入队伍
         long userId = loginUser.getId();
         UserTeam queryUserTeam = new UserTeam();
-        queryUserTeam.setUserId(userId);
         queryUserTeam.setTeamId(teamId);
+        queryUserTeam.setUserId(userId);
         QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>(queryUserTeam);
         long count = userTeamService.count(queryWrapper);
         if (count == 0) {

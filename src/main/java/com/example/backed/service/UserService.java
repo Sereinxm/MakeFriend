@@ -6,9 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
-import static com.example.backed.constant.UserConstant.ADMIN_ROLE;
-import static com.example.backed.constant.UserConstant.USER_LOGIN_STATE;
-
 
 public interface UserService extends IService<User> {
 
@@ -39,7 +36,7 @@ public interface UserService extends IService<User> {
      * @param originUser
      * @return
      */
-    User getSafeUser(User originUser);
+    User getSafetyUser(User originUser);
 
     /**
      * 用户注销

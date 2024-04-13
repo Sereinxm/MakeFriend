@@ -23,8 +23,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static com.example.backed.constant.UserConstant.ADMIN_ROLE;
 import static com.example.backed.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -32,8 +30,8 @@ import static com.example.backed.constant.UserConstant.USER_LOGIN_STATE;
  * @description 针对表【user(用户表)】的数据库操作Service实现
  * @createDate 2024-03-04 16:58:20
  */
-@Service
 @Slf4j
+@Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
     @Resource
@@ -78,7 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //编号不能重复
         queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("planetCode", userAccount);
+        queryWrapper.eq("planetCode", planetCode);
         count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "编号重复");
@@ -128,7 +126,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
         }
         //用户脱敏
-        User safetyUser = getSafeUser(user);
+        User safetyUser = getSafetyUser(user);
         //4.记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
 
@@ -142,7 +140,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @return
      */
     @Override
-    public User getSafeUser(User originUser) {
+    public User getSafetyUser(User originUser) {
         if (originUser == null) {
             return null;
         }
@@ -191,13 +189,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Gson gson = new Gson();
         //2.在内存中判断是否包含符合要求的标签
         return userList.stream().filter(user -> {
-            String tagStr = user.getTags();
             //如果用户没有标签返回false
-            if (StringUtils.isBlank(tagStr)) {
-                return false;
-            }
-            //json转为java对象
-            Set<String> tempTagNameSet = gson.fromJson(tagStr, new TypeToken<Set<String>>() {}.getType());
+            String tagsStr = user.getTags();
+            Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {
+            }.getType());
             //防止空指针异常，因为用户标签有可能为空。这行代码表示的是tempTagNameSet如果为空的话，就用orElse中的值来代替。
             tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
             for (String tagName : tagNameList) {
@@ -206,7 +201,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 }
             }
             return true;
-        }).map(this::getSafeUser).collect(Collectors.toList());
+        }).map(this::getSafetyUser).collect(Collectors.toList());
 
 
     }
@@ -215,12 +210,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public int updateUser(User user, User loginUser) {
         long userId = user.getId();
         if (userId <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.NO_AUTH);
         }
         //如果是管理员，允许更新任意用户
         //如果不是管理员，只允许更新当前（自己的信息）
         if (!isAdmin(loginUser) && userId != loginUser.getId()) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         User oldUser = userMapper.selectById(userId);
         if (oldUser == null) {
@@ -236,7 +231,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         if (userObj == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
+            throw new BusinessException(ErrorCode.NO_AUTH);
         }
         return (User) userObj;
 
@@ -251,10 +246,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public List<User> matchUsers(long num, User loginUser) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.isNotNull("tags");
         queryWrapper.select("id","tags");
+        queryWrapper.isNotNull("tags");
         List<User> userList = this.list(queryWrapper);
-
         String tags = loginUser.getTags();
         Gson gson = new Gson();
         List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {
@@ -281,18 +275,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 .limit(num)
                 .collect(Collectors.toList());
         //有顺序的userID列表
-        List<Long> userListVo = topUserPairList.stream().map(pari -> pari.getKey().getId()).collect(Collectors.toList());
+        List<Long> userIdList = topUserPairList.stream().map(pari -> pari.getKey().getId()).collect(Collectors.toList());
 
         //根据id查询user完整信息
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.in("id",userListVo);
+        userQueryWrapper.in("id",userIdList);
         Map<Long, List<User>> userIdUserListMap = this.list(userQueryWrapper).stream()
-                .map(user -> getSafeUser(user))
+                .map(user -> getSafetyUser(user))
                 .collect(Collectors.groupingBy(User::getId));
 
         // 因为上面查询打乱了顺序，这里根据上面有序的userID列表赋值
         List<User> finalUserList = new ArrayList<>();
-        for (Long userId : userListVo){
+        for (Long userId : userIdList){
             finalUserList.add(userIdUserListMap.get(userId).get(0));
         }
         return finalUserList;
@@ -325,7 +319,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 根据标签搜索用户（SQL）
-     *
      * @param tagNameList 用户拥有的标签
      * @return
      */
@@ -342,7 +335,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         List<User> userList = userMapper.selectList(queryWrapper);
         //返回脱敏后的用户
-        return userList.stream().map(this::getSafeUser).collect(Collectors.toList());
+        return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
 
 
     }
